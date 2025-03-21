@@ -57,8 +57,8 @@ func GenJwtForFilerServer(signingKey SigningKey, expiresAfterSec int) EncodedJwt
 		return ""
 	}
 
-	mode := "none"
-	basePath := ""
+	mode := "write"
+	basePath := "/"
 
 	claims := SeaweedFilerClaims{
 		mode,
