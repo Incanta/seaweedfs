@@ -24,6 +24,8 @@ type SeaweedFileIdClaims struct {
 // Right now, it only contains the standard claims; but this might be extended later
 // for more fine-grained permissions.
 type SeaweedFilerClaims struct {
+	Mode string `json:"mode"`
+	BasePath string `json:"basePath"`
 	jwt.RegisteredClaims
 }
 
@@ -55,7 +57,12 @@ func GenJwtForFilerServer(signingKey SigningKey, expiresAfterSec int) EncodedJwt
 		return ""
 	}
 
+	mode := "none"
+	basePath := ""
+
 	claims := SeaweedFilerClaims{
+		mode,
+		basePath,
 		jwt.RegisteredClaims{},
 	}
 	if expiresAfterSec > 0 {

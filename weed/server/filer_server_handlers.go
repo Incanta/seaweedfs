@@ -223,9 +223,26 @@ func (fs *FilerServer) maybeCheckJwtAuthorization(r *http.Request, isWrite bool)
 	if !token.Valid {
 		glog.V(1).Infof("jwt invalid from %s: %v", r.RemoteAddr, tokenStr)
 		return false
-	} else {
-		return true
 	}
+
+	if sc, ok := token.Claims.(*security.SeaweedFilerClaims); ok {
+		hasRole := sc.Mode == "write" || (sc.Mode == "read" && !isWrite)
+
+		if !hasRole {
+			glog.V(1).Infof("jwt invalid mode from %s: %v", r.RemoteAddr, tokenStr)
+			return false
+		}
+
+		if strings.HasPrefix(r.RequestURI, sc.BasePath) {
+			return true
+		} else {
+			glog.V(1).Infof("jwt invalid path from %s: %v", r.RemoteAddr, tokenStr)
+			return false
+		}
+	}
+
+	glog.V(1).Infof("unexpected jwt from %s: %v", r.RemoteAddr, tokenStr)
+	return false
 }
 
 func (fs *FilerServer) filerHealthzHandler(w http.ResponseWriter, r *http.Request) {
